@@ -25,4 +25,3 @@ SELECT piloto.*,
        pais.nombre AS nombre_pais
 FROM piloto
 JOIN pais ON piloto.idpais = pais.idpais;
-

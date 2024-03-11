@@ -9,22 +9,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_carta'])) {
     $awa = $_POST['awa'];
     $pac = $_POST['pac'];
 
+    $id_pais =$_POST['pais'];
+
     $imagenPiloto_tmp = $_FILES['imagenPiloto']['tmp_name'];
     $imagenPilotoName = $_FILES['imagenPiloto']['name'];
-    $uploadPath = './media/' . $imagenPilotoName;
+    $uploadPath = './media/pilots/' . $imagenPilotoName;
     move_uploaded_file($imagenPiloto_tmp, $uploadPath);
 
-    $bandera_tmp = $_FILES['bandera']['tmp_name'];
-    $banderaName = $_FILES['bandera']['name'];
-    $uploadPathBandera = './banderas/' . $banderaName;
-    move_uploaded_file($bandera_tmp, $uploadPathBandera);
-
     try {
-        $stmt1 = $conn->prepare("INSERT INTO pais(nombre, bandera) VALUES (:nombre, :bandera)");
-        $stmt1->bindParam(':nombre', $_POST['paisPiloto']);
-        $stmt1->bindParam(':bandera', $uploadPathBandera);
-        $stmt1->execute();
-        $id_pais = $conn->lastInsertId();
+      
 
         $stmt = $conn->prepare("INSERT INTO piloto(media, name, exp, rac, awa, pac, photo, idpais) VALUES (:mitjaPilot, :name, :exp, :rac, :awa, :pac, :photo, :idpais)");
         $stmt->bindParam(':mitjaPilot', $mitjaPilot);

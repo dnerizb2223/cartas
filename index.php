@@ -62,7 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar_carta'])) {
                 if (!empty($carta['bandera'])) {
                     echo "<img src='{$carta['bandera']}' class='bandera-card' alt='Bandera del Piloto'>";
                 }
-
                 echo "<div class='atributosCarta'>";
                 if (!empty($carta['exp'])) {
                     echo "<h5 class='expCarta'>Exp: {$carta['exp']}</h5>";

@@ -1,3 +1,14 @@
+<?php
+require_once 'config.php';
+
+try {
+    $stmt = $conn->query("SELECT * FROM pais");
+    $paisos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -39,11 +50,15 @@
             <div class="paisForm">
                 <li>
                     <label for="pais">País:</label>
-                    <input type="text" name="paisPiloto">
-                </li><br>
-                <li>
-                    <label for="bandera">Bandera:</label>
-                    <input type="file" name="bandera">
+                    <select name="pais" id="pais">
+                       <?php
+                       foreach ($paisos as $pais) {
+                        ?> 
+                        <option value="<?php echo $pais["idpais"] ?>"><?php echo $pais["nombre"] ?></option>
+                        <?php
+                       }
+                       ?>
+                    </select>
                 </li>
             </div>
             <div>
