@@ -1,0 +1,348 @@
+CREATE DATABASE IF NOT EXISTS carta;
+USE carta;
+
+CREATE TABLE IF NOT EXISTS pais (
+    idpais INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    bandera VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS piloto (
+    idpiloto INT AUTO_INCREMENT PRIMARY KEY,
+    media VARCHAR(255),
+    name VARCHAR(255) NOT NULL,
+    exp INT,
+    rac INT,
+    awa INT,
+    pac INT,
+    photo VARCHAR(255),
+    idpais INT,
+    FOREIGN KEY (idpais) REFERENCES pais(idpais)
+);
+
+SELECT piloto.*, 
+       pais.bandera, 
+       pais.nombre AS nombre_pais
+FROM piloto
+JOIN pais ON piloto.idpais = pais.idpais;
+
+<?php
+$servername = "localhost";
+$username = "root";
+$password = "mysql";
+$dbname = "carta";
+
+try {
+    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch(PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+}
+?>
+<?php
+require_once 'config.php';
+
+try {
+    $stmt = $conn->query("SELECT * FROM pais");
+    $paisos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}
+?>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Crear Carta</title>
+    <meta name="description" content="Crear Carta">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="./index.php">Inici</a></li>
+            <li><a href="./crear-carta.php">Crear Carta</a></li>
+        </ul>
+    </nav> 
+    <div class="carta">
+        <form action="php_cartas.php" method="POST" enctype="multipart/form-data">
+            <div class="infoForm">
+                <div>
+                    <label for="mitjaPilot">Mitja del Pilot:</label>
+                    <input type="text" name="mitjaPilot"> <br>
+                </div>
+                <br>
+                <div>
+                    <label for="imagenPiloto">Foto del Pilot:</label>
+                    <input type="file" name="imagenPiloto">
+                </div>
+                <br>
+                <div>
+                    <label for="nombrePiloto">Nom del Pilot:</label>
+                    <input type="text" name="nombrePiloto">
+                </div>      
+            </div>
+            <br>
+            <div class="paisForm">
+                <li>
+                    <label for="pais">País:</label>
+                    <select name="pais" id="pais">
+                       <?php
+                       foreach ($paisos as $pais) {
+                        ?> 
+                        <option value="<?php echo $pais["idpais"] ?>"><?php echo $pais["nombre"] ?></option>
+                        <?php
+                       }
+                       ?>
+                    </select>
+                </li>
+            </div>
+            <div>
+                <ul>
+                    <li>
+                        <label for="exp">Experiencia del Pilot:</label>
+                        <input type="text" name="exp"><br>
+                    </li>
+                    <li>
+                        <label for="rac">Reflexes del Pilot:</label>
+                        <input type="text" name="rac"><br>
+                    </li>
+                    <li>
+                        <label for="awa">Pas per Curves del Pilot:</label>
+                        <input type="text" name="awa"><br>
+                    </li>
+                    <li>
+                        <label for="pac">Velocitat del Pilot:</label>
+                        <input type="text" name="pac"><br>
+                    </li>
+                </ul>
+            </div>                
+            <input type="submit" name="crear_carta" value="Enviar">
+        </form>
+    </div>
+</body>
+</html>
+<?php
+require_once 'config.php';
+
+if(isset($_GET['id'])) {
+    $cartaId = $_GET['id'];
+
+    $stmt = $conn->prepare("SELECT * FROM piloto WHERE idpiloto = :cartaId");
+    $stmt->bindParam(':cartaId', $cartaId);
+    $stmt->execute();
+    $carta = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_edicion'])) {
+        $nombre = $_POST['nombre'];
+        $media = $_POST['media'];
+        $exp = $_POST['exp'];
+        $rac = $_POST['rac'];
+        $awa = $_POST['awa'];
+        $pac = $_POST['pac'];
+
+        try {
+            $stmt = $conn->prepare("UPDATE piloto SET name = :nombre, media = :media, exp = :exp, rac = :rac, awa = :awa, pac = :pac WHERE idpiloto = :cartaId");
+            $stmt->bindParam(':nombre', $nombre);
+            $stmt->bindParam(':media', $media);
+            $stmt->bindParam(':exp', $exp);
+            $stmt->bindParam(':rac', $rac);
+            $stmt->bindParam(':awa', $awa);
+            $stmt->bindParam(':pac', $pac);
+            $stmt->bindParam(':cartaId', $cartaId);
+            $stmt->execute();
+
+            header('Location: index.php');
+            exit();
+        } catch (PDOException $e) {
+            echo "Error al guardar la edición: " . $e->getMessage();
+        }
+    }
+} else {
+    echo "No se proporcionó un ID de carta válido.";
+}
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Cartas</title>
+    <meta name="description" content="Cartas">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</head>
+<body>
+    <?php if(isset($carta)): ?>
+    <form method="POST" class="carta" action="editar-carta.php?id=<?php echo $carta['idpiloto']; ?>">
+        <input type="hidden" name="carta_id" value="<?php echo $carta['idpiloto']; ?>">
+        <label for="nombre">Nombre:</label>
+        <input type="text" name="nombre" value="<?php echo $carta['name']; ?>"><br>
+        <label for="media">Media:</label>
+        <input type="text" name="media" value="<?php echo $carta['media']; ?>"><br>
+        <label for="exp">Experiencia:</label>
+        <input type="text" name="exp" value="<?php echo $carta['exp']; ?>"><br>
+        <label for="rac">Reflejos:</label>
+        <input type="text" name="rac" value="<?php echo $carta['rac']; ?>"><br>
+        <label for="awa">Pas per Curves:</label>
+        <input type="text" name="awa" value="<?php echo $carta['awa']; ?>"><br>
+        <label for="pac">Velocidad:</label>
+        <input type="text" name="pac" value="<?php echo $carta['pac']; ?>"><br>
+        <input type="submit" name="guardar_edicion" value="Guardar Cambios">
+    </form>
+    <?php endif; ?>
+</body>
+</html>
+<?php
+require_once 'config.php';
+
+try {
+    $stmt = $conn->query("SELECT piloto.*, pais.bandera, pais.nombre AS nombre_pais
+                    FROM piloto
+                    JOIN pais ON piloto.idpais = pais.idpais");
+    $cartas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar_carta'])) {
+    $cartaId = $_POST['carta_id'];
+
+    try {
+        $stmt = $conn->prepare("DELETE FROM piloto WHERE idpiloto = :cartaId");
+        $stmt->bindParam(':cartaId', $cartaId);
+        $stmt->execute();
+    } catch (PDOException $e) {
+        echo "Error al borrar la carta: " . $e->getMessage();
+    }
+}
+
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Cartas</title>
+    <meta name="description" content="Cartas">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./css/style.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="./index.php">Inici</a></li>
+            <li><a href="./crear-carta.php">Crear Carta</a></li>
+        </ul>
+    </nav>
+    <div class="cartas-container">
+        <?php
+        if (!empty($cartas)) {
+            foreach ($cartas as $carta) {
+                echo "<div class='card text-bg-dark'>";
+                
+                if (!empty($carta['name'])) {
+                    echo "<h5 class='nombreCarta'>{$carta['name']}</h5>";
+                }
+
+                if (!empty($carta['media'])) {
+                    echo "<h5 class='mediaCarta'>{$carta['media']}</h5>";
+                }
+
+                if (!empty($carta['nombre'])) {
+                    echo "<h5 class='nombrePaisCarta'>Pais: {$carta['nombre']}</h5>";
+                }
+                if (!empty($carta['bandera'])) {
+                    echo "<img src='{$carta['bandera']}' class='bandera-card' alt='Bandera del Piloto'>";
+                }
+// hola
+                echo "<div class='atributosCarta'>";
+                if (!empty($carta['exp'])) {
+                    echo "<h5 class='expCarta'>Exp: {$carta['exp']}</h5>";
+                }
+                if (!empty($carta['rac'])) {
+                    echo "<h5 class='racCarta'>Rac: {$carta['rac']}</h5>";
+                }
+                if (!empty($carta['awa'])) {
+                    echo "<h5 class='awaCarta'>Awa: {$carta['awa']}</h5>";
+                }
+                if (!empty($carta['pac'])) {
+                    echo "<h5 class='pacCarta'>Pac: {$carta['pac']}</h5>";
+                }
+                echo "</div>";
+
+                echo "<div class='card-img-overlay'>";
+                echo "<div class='stats'>";
+                echo "<a href='editar-carta.php?id={$carta['idpiloto']}' class='btn btn-primary editar-btn'>Editar</a>";
+                echo "<form method='POST' action='index.php'>";
+                echo "<input type='hidden' name='carta_id' value='{$carta['idpiloto']}'>";
+                echo "<button type='submit' name='borrar_carta' class='btn btn-danger borrar-btn'>Borrar</button>";
+                echo "</form>";
+                echo "</div>";
+                echo "</div>";
+
+                if (!empty($carta['photo'])) {
+                    echo "<img src='{$carta['photo']}' class='card-img' alt='Imagen del Piloto'>";
+                }
+
+                echo "</div>";
+            }
+        } else {
+            echo "No hay cartas en la base de datos.";
+        }
+        ?>
+    </div>
+</body>
+</html>
+<?php
+require_once 'config.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_carta'])) {
+    $mitjaPilot = $_POST['mitjaPilot'];
+    $nombrePiloto = $_POST['nombrePiloto'];
+    $exp = $_POST['exp'];
+    $rac = $_POST['rac'];
+    $awa = $_POST['awa'];
+    $pac = $_POST['pac'];
+
+    $id_pais =$_POST['pais'];
+
+    $imagenPiloto_tmp = $_FILES['imagenPiloto']['tmp_name'];
+    $imagenPilotoName = $_FILES['imagenPiloto']['name'];
+    $uploadPath = './media/pilots/' . $imagenPilotoName;
+    move_uploaded_file($imagenPiloto_tmp, $uploadPath);
+
+    try {
+      
+
+        $stmt = $conn->prepare("INSERT INTO piloto(media, name, exp, rac, awa, pac, photo, idpais) VALUES (:mitjaPilot, :name, :exp, :rac, :awa, :pac, :photo, :idpais)");
+        $stmt->bindParam(':mitjaPilot', $mitjaPilot);
+        $stmt->bindParam(':name', $nombrePiloto);
+        $stmt->bindParam(':exp', $exp);
+        $stmt->bindParam(':rac', $rac);
+        $stmt->bindParam(':awa', $awa);
+        $stmt->bindParam(':pac', $pac);
+        $stmt->bindParam(':photo', $uploadPath);
+        $stmt->bindParam(':idpais', $id_pais);
+        $stmt->execute();
+
+        $conn = null;
+
+        header('Location: index.php');
+        exit();
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
+}
+
+$conn = null;
+?>
