@@ -5,7 +5,6 @@ try {
     $stmt = $conn->query("SELECT * FROM pais");
     $paisos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Obtener todas las competiciones
     $stmt = $conn->query("SELECT * FROM competicio");
     $competiciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {

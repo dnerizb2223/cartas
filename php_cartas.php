@@ -16,11 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_carta'])) {
     $uploadPath = './media/' . $imagenPilotoName;
     move_uploaded_file($imagenPiloto_tmp, $uploadPath);
 
-    // Guardar las competiciones seleccionadas
     $competicionesSeleccionadas = $_POST['competiciones'];
 
     try {
-        // Insertar piloto en la tabla piloto
         $stmt = $conn->prepare("INSERT INTO piloto(media, name, exp, rac, awa, pac, photo, idpais) VALUES (:mitjaPilot, :name, :exp, :rac, :awa, :pac, :photo, :idpais)");
         $stmt->bindParam(':mitjaPilot', $mitjaPilot);
         $stmt->bindParam(':name', $nombrePiloto);
@@ -32,10 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_carta'])) {
         $stmt->bindParam(':idpais', $id_pais);
         $stmt->execute();
 
-        // Obtener el idpiloto del piloto recién insertado
         $idpiloto = $conn->lastInsertId();
 
-        // Insertar las relaciones entre el piloto y las competiciones seleccionadas en la tabla piloto_competicio
         foreach ($competicionesSeleccionadas as $idcompeticio) {
             $stmt = $conn->prepare("INSERT INTO piloto_competicio(idpiloto, idcompeticio) VALUES (:idpiloto, :idcompeticio)");
             $stmt->bindParam(':idpiloto', $idpiloto);
@@ -43,7 +39,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_carta'])) {
             $stmt->execute();
         }
 
-        // Redirigir a la página principal después de la inserción
         header('Location: index.php');
         exit();
     } catch (PDOException $e) {

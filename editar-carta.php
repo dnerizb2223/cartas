@@ -4,13 +4,11 @@ require_once 'config.php';
 if(isset($_GET['id'])) {
     $cartaId = $_GET['id'];
 
-    // Obtener información de la carta desde la base de datos
     $stmt = $conn->prepare("SELECT piloto.*, GROUP_CONCAT(piloto_competicio.idcompeticio) AS idcompeticio FROM piloto LEFT JOIN piloto_competicio ON piloto.idpiloto = piloto_competicio.idpiloto WHERE piloto.idpiloto = :cartaId");
     $stmt->bindParam(':cartaId', $cartaId);
     $stmt->execute();
     $carta = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Obtener todas las competiciones
     try {
         $stmt = $conn->query("SELECT * FROM competicio");
         $competiciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -19,7 +17,6 @@ if(isset($_GET['id'])) {
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['guardar_edicion'])) {
-        // Obtener los datos actualizados del formulario
         $nombre = $_POST['nombre'];
         $media = $_POST['media'];
         $exp = $_POST['exp'];
@@ -29,7 +26,6 @@ if(isset($_GET['id'])) {
         $competicionesSeleccionadas = isset($_POST['competiciones']) ? $_POST['competiciones'] : [];
 
         try {
-            // Actualizar los datos de la carta en la base de datos
             $stmt = $conn->prepare("UPDATE piloto SET name = :nombre, media = :media, exp = :exp, rac = :rac, awa = :awa, pac = :pac WHERE idpiloto = :cartaId");
             $stmt->bindParam(':nombre', $nombre);
             $stmt->bindParam(':media', $media);
@@ -40,12 +36,10 @@ if(isset($_GET['id'])) {
             $stmt->bindParam(':cartaId', $cartaId);
             $stmt->execute();
 
-            // Actualizar las relaciones entre la carta y las competiciones en la tabla de relación
             $stmt = $conn->prepare("DELETE FROM piloto_competicio WHERE idpiloto = :cartaId");
             $stmt->bindParam(':cartaId', $cartaId);
             $stmt->execute();
 
-            // Insertar las nuevas relaciones seleccionadas en el formulario
             foreach ($competicionesSeleccionadas as $idcompeticio) {
                 $stmt = $conn->prepare("INSERT INTO piloto_competicio(idpiloto, idcompeticio) VALUES (:cartaId, :idcompeticio)");
                 $stmt->bindParam(':cartaId', $cartaId);
@@ -53,7 +47,6 @@ if(isset($_GET['id'])) {
                 $stmt->execute();
             }
 
-            // Redirigir a la página principal después de guardar los cambios
             header('Location: index.php');
             exit();
         } catch (PDOException $e) {

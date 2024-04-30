@@ -2,7 +2,6 @@
 require_once 'config.php';
 
 try {
-    // Modificar la consulta para incluir las competiciones y las banderas de los países
     $stmt = $conn->query("SELECT piloto.*, GROUP_CONCAT(competicio.nombre) AS competiciones, GROUP_CONCAT(pais.bandera) AS banderas_pais
                           FROM piloto
                           LEFT JOIN piloto_competicio ON piloto.idpiloto = piloto_competicio.idpiloto
