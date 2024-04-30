@@ -1,11 +1,14 @@
-<!-- index.php -->
 <?php
 require_once 'config.php';
 
 try {
-    $stmt = $conn->query("SELECT piloto.*, pais.bandera, pais.nombre AS nombre_pais
-                    FROM piloto
-                    JOIN pais ON piloto.idpais = pais.idpais");
+    // Modificar la consulta para incluir las competiciones y las banderas de los países
+    $stmt = $conn->query("SELECT piloto.*, GROUP_CONCAT(competicio.nombre) AS competiciones, GROUP_CONCAT(pais.bandera) AS banderas_pais
+                          FROM piloto
+                          LEFT JOIN piloto_competicio ON piloto.idpiloto = piloto_competicio.idpiloto
+                          LEFT JOIN competicio ON piloto_competicio.idcompeticio = competicio.idcompeticio
+                          LEFT JOIN pais ON piloto.idpais = pais.idpais
+                          GROUP BY piloto.idpiloto");
     $cartas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
@@ -22,7 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar_carta'])) {
         echo "Error al borrar la carta: " . $e->getMessage();
     }
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -63,7 +65,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar_carta'])) {
                 if (!empty($carta['bandera'])) {
                     echo "<img src='{$carta['bandera']}' class='bandera-card' alt='Bandera del Piloto'>";
                 }
+
                 echo "<div class='atributosCarta'>";
+                if (!empty($carta['competiciones'])) {
+                    echo "<p class='competiciones'>Competiciones: {$carta['competiciones']}</p>";
+                }
                 if (!empty($carta['exp'])) {
                     echo "<h5 class='expCarta'>Exp: {$carta['exp']}</h5>";
                 }
@@ -78,14 +84,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['borrar_carta'])) {
                 }
                 echo "</div>";
 
-                echo "<div class='card-img-overlay'>";
                 echo "<div class='stats'>";
-                echo "<a href='editar-carta.php?id={$carta['idpiloto']}' class='btn btn-primary editar-btn'>Editar</a>";
-                echo "<form method='POST' action='index.php'>";
-                echo "<input type='hidden' name='carta_id' value='{$carta['idpiloto']}'>";
-                echo "<button type='submit' name='borrar_carta' class='btn btn-danger borrar-btn'>Borrar</button>";
-                echo "</form>";
-                echo "</div>";
+                if (!empty($carta['idpiloto'])) {
+                    echo "<a href='editar-carta.php?id={$carta['idpiloto']}' class='btn btn-primary editar-btn'>Editar</a>";
+                    echo "<form method='POST' action='index.php'>";
+                    echo "<input type='hidden' name='carta_id' value='{$carta['idpiloto']}'>";
+                    echo "<button type='submit' name='borrar_carta' class='btn btn-danger borrar-btn'>Borrar</button>";
+                    echo "</form>";
+                }
                 echo "</div>";
 
                 if (!empty($carta['photo'])) {

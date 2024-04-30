@@ -5,7 +5,7 @@ if(isset($_GET['id'])) {
     $cartaId = $_GET['id'];
 
     // Obtener información de la carta desde la base de datos
-    $stmt = $conn->prepare("SELECT * FROM piloto WHERE idpiloto = :cartaId");
+    $stmt = $conn->prepare("SELECT piloto.*, GROUP_CONCAT(piloto_competicio.idcompeticio) AS idcompeticio FROM piloto LEFT JOIN piloto_competicio ON piloto.idpiloto = piloto_competicio.idpiloto WHERE piloto.idpiloto = :cartaId");
     $stmt->bindParam(':cartaId', $cartaId);
     $stmt->execute();
     $carta = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -26,7 +26,7 @@ if(isset($_GET['id'])) {
         $rac = $_POST['rac'];
         $awa = $_POST['awa'];
         $pac = $_POST['pac'];
-        $competicionesSeleccionadas = $_POST['competiciones'];
+        $competicionesSeleccionadas = isset($_POST['competiciones']) ? $_POST['competiciones'] : [];
 
         try {
             // Actualizar los datos de la carta en la base de datos
@@ -78,6 +78,12 @@ if(isset($_GET['id'])) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </head>
 <body>
+    <nav>
+        <ul>
+            <li><a href="./index.php">Inici</a></li>
+            <li><a href="./crear-carta.php">Crear Carta</a></li>
+        </ul>
+    </nav> 
     <?php if(isset($carta)): ?>
     <form method="POST" class="carta" action="editar-carta.php?id=<?php echo $carta['idpiloto']; ?>">
         <input type="hidden" name="carta_id" value="<?php echo $carta['idpiloto']; ?>">
@@ -93,12 +99,11 @@ if(isset($_GET['id'])) {
         <input type="text" name="awa" value="<?php echo $carta['awa']; ?>"><br>
         <label for="pac">Velocidad:</label>
         <input type="text" name="pac" value="<?php echo $carta['pac']; ?>"><br>
-        <label for="competiciones">Competiciones:</label>
-        <select name="competiciones[]" multiple>
-            <?php foreach ($competiciones as $competicion): ?>
-                <option value="<?php echo $competicion['idcompeticio']; ?>" <?php if(in_array($competicion['idcompeticio'], explode(',', $carta['idcompeticio']))): ?> selected <?php endif; ?>><?php echo $competicion['nombre']; ?></option>
-            <?php endforeach; ?>
-        </select><br>
+        <label>Competiciones:</label><br>
+        <?php foreach ($competiciones as $competicion): ?>
+            <input type="checkbox" name="competiciones[]" value="<?php echo $competicion['idcompeticio']; ?>" <?php if(in_array($competicion['idcompeticio'], explode(',', $carta['idcompeticio']))): ?> checked <?php endif; ?>>
+            <label><?php echo $competicion['nombre']; ?></label><br>
+        <?php endforeach; ?>
         <input type="submit" name="guardar_edicion" value="Guardar Cambios">
     </form>
     <?php endif; ?>

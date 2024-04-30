@@ -53,8 +53,8 @@ nav li a:hover {
 
 .mediaCarta {
   position: absolute;
-  top: 60px;
-  left: 10px;
+  top: 10px;
+  right: 10px;
   color: greenyellow;
   background-color: #333333de;
   padding: 10px;
@@ -228,4 +228,11 @@ nav li a:hover {
 
 .carta input[type="submit"]:hover {
   background-color: #0056b3;
+}
+
+.competiciones {
+  right: 0px;
+  margin-top: 10px;
+  font-size: 14px;
+  font-style: italic;
 }

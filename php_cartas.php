@@ -16,6 +16,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_carta'])) {
     $uploadPath = './media/' . $imagenPilotoName;
     move_uploaded_file($imagenPiloto_tmp, $uploadPath);
 
+    // Guardar las competiciones seleccionadas
+    $competicionesSeleccionadas = $_POST['competiciones'];
+
     try {
         // Insertar piloto en la tabla piloto
         $stmt = $conn->prepare("INSERT INTO piloto(media, name, exp, rac, awa, pac, photo, idpais) VALUES (:mitjaPilot, :name, :exp, :rac, :awa, :pac, :photo, :idpais)");
@@ -33,8 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['crear_carta'])) {
         $idpiloto = $conn->lastInsertId();
 
         // Insertar las relaciones entre el piloto y las competiciones seleccionadas en la tabla piloto_competicio
-        $competiciones = $_POST['competiciones'];
-        foreach ($competiciones as $idcompeticio) {
+        foreach ($competicionesSeleccionadas as $idcompeticio) {
             $stmt = $conn->prepare("INSERT INTO piloto_competicio(idpiloto, idcompeticio) VALUES (:idpiloto, :idcompeticio)");
             $stmt->bindParam(':idpiloto', $idpiloto);
             $stmt->bindParam(':idcompeticio', $idcompeticio);
