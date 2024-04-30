@@ -1,7 +1,8 @@
+<!-- config.php -->
 <?php
 $servername = "localhost";
 $username = "root";
-$password = "mysql";
+$password = "Dn20032003";
 $dbname = "carta";
 
 try {
@@ -11,3 +12,4 @@ try {
     die("Connection failed: " . $e->getMessage());
 }
 ?>
+

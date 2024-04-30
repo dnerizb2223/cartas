@@ -4,6 +4,10 @@ require_once 'config.php';
 try {
     $stmt = $conn->query("SELECT * FROM pais");
     $paisos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Obtener todas las competiciones
+    $stmt = $conn->query("SELECT * FROM competicio");
+    $competiciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
@@ -51,16 +55,21 @@ try {
                 <li>
                     <label for="pais">País:</label>
                     <select name="pais" id="pais">
-                       <?php
-                       foreach ($paisos as $pais) {
-                        ?> 
-                        <option value="<?php echo $pais["idpais"] ?>"><?php echo $pais["nombre"] ?></option>
-                        <?php
-                       }
-                       ?>
+                        <?php foreach ($paisos as $pais): ?>
+                            <option value="<?php echo $pais["idpais"]; ?>"><?php echo $pais["nombre"]; ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </li>
             </div>
+            <br>
+            <div>
+                <label>Competiciones:</label><br>
+                <?php foreach ($competiciones as $competicion): ?>
+                    <input type="checkbox" name="competiciones[]" value="<?php echo $competicion['idcompeticio']; ?>">
+                    <label><?php echo $competicion['nombre']; ?></label><br>
+                <?php endforeach; ?>
+            </div>
+            <br>
             <div>
                 <ul>
                     <li>
@@ -86,3 +95,4 @@ try {
     </div>
 </body>
 </html>
+                        
