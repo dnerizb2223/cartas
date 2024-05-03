@@ -20,6 +20,19 @@ CREATE TABLE IF NOT EXISTS piloto (
     FOREIGN KEY (idpais) REFERENCES pais(idpais)
 );
 
+CREATE TABLE IF NOT EXISTS piloto_competicio (
+    idpiloto INT,
+    idcompeticio INT,
+    FOREIGN KEY (idpiloto) REFERENCES piloto(idpiloto) ON DELETE CASCADE,
+    FOREIGN KEY (idcompeticio) REFERENCES competicio(idcompeticio) ON DELETE CASCADE,
+    PRIMARY KEY (idpiloto, idcompeticio)
+);
+
+CREATE TABLE IF NOT EXISTS competicio (
+    idcompeticio INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL
+);
+
 SELECT piloto.*, 
        pais.bandera, 
        pais.nombre AS nombre_pais
