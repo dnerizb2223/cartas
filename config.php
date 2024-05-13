@@ -1,7 +1,7 @@
 <?php
 $servername = "localhost";
 $username = "root";
-$password = "Dn20032003";
+$password = "mysql";
 $dbname = "carta";
 
 try {
